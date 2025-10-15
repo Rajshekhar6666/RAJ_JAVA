@@ -7,19 +7,22 @@ GRID_SIZE = 6
 CELL_SIZE = 100
 WINDOW_SIZE = GRID_SIZE * CELL_SIZE
 
-# Colors
-WHITE = (240, 240, 240)
-BLACK = (0, 0, 0)
-DIRTY = (139, 69, 19)  # Dirt = brown
-CLEAN = (255, 255, 255)
-VACUUM_COLOR = (70, 130, 180)  # Steel blue
-
 # Initialize Pygame
 pygame.init()
-win = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE + 60))  # Extra space for score
-pygame.display.set_caption("Vacuum Cleaner Simulation")
+win = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE + 80))
+pygame.display.set_caption("Vacuum Cleaner Game")
 
 font = pygame.font.SysFont("Arial", 28)
+
+# Load images
+vacuum_img = pygame.image.load("vacuum.png")
+dirt_img = pygame.image.load("dirt.png")
+floor_img = pygame.image.load("floor.png")
+
+# Scale images to fit grid
+vacuum_img = pygame.transform.scale(vacuum_img, (CELL_SIZE - 30, CELL_SIZE - 30))
+dirt_img = pygame.transform.scale(dirt_img, (CELL_SIZE - 20, CELL_SIZE - 20))
+floor_img = pygame.transform.scale(floor_img, (CELL_SIZE, CELL_SIZE))
 
 # Environment: Each cell is either "Clean" or "Dirty"
 environment = [["Dirty" if random.random() < 0.5 else "Clean" for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -33,26 +36,30 @@ steps = 0
 
 
 def draw_environment():
-    win.fill(WHITE)
+    win.fill((50, 50, 50))
 
-    # Draw grid
+    # Draw floor and dirt
     for y in range(GRID_SIZE):
         for x in range(GRID_SIZE):
             rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+
+            # Floor tile
+            win.blit(floor_img, rect)
+
+            # Dirt pile if dirty
             if environment[y][x] == "Dirty":
-                pygame.draw.rect(win, DIRTY, rect)  # Dirty cell
-            else:
-                pygame.draw.rect(win, CLEAN, rect)  # Clean cell
-            pygame.draw.rect(win, BLACK, rect, 2)  # Grid lines
+                win.blit(dirt_img, (x * CELL_SIZE + 10, y * CELL_SIZE + 10))
+
+            # Grid lines
+            pygame.draw.rect(win, (0, 0, 0), rect, 2)
 
     # Draw vacuum cleaner
-    vacuum_rect = pygame.Rect(vacuum_x * CELL_SIZE + 20, vacuum_y * CELL_SIZE + 20, CELL_SIZE - 40, CELL_SIZE - 40)
-    pygame.draw.ellipse(win, VACUUM_COLOR, vacuum_rect)
+    win.blit(vacuum_img, (vacuum_x * CELL_SIZE + 15, vacuum_y * CELL_SIZE + 15))
 
     # Draw score bar
-    pygame.draw.rect(win, BLACK, (0, WINDOW_SIZE, WINDOW_SIZE, 60))
-    score_text = font.render(f"Score: {score}   Steps: {steps}", True, WHITE)
-    win.blit(score_text, (20, WINDOW_SIZE + 15))
+    pygame.draw.rect(win, (30, 30, 30), (0, WINDOW_SIZE, WINDOW_SIZE, 80))
+    score_text = font.render(f"Score: {score}   Steps: {steps}", True, (255, 255, 255))
+    win.blit(score_text, (20, WINDOW_SIZE + 20))
 
 
 def move_vacuum():
@@ -97,15 +104,14 @@ while running:
         move_vacuum()
     else:
         # Display final message
-        win.fill(BLACK)
-        msg = font.render(f"All Cleaned! Score: {score} in {steps} steps", True, WHITE)
+        win.fill((0, 0, 0))
+        msg = font.render(f"🎉 All Cleaned! Score: {score} in {steps} steps", True, (255, 255, 255))
         win.blit(msg, (50, WINDOW_SIZE // 2))
         pygame.display.update()
-        pygame.time.wait(3000)
+        pygame.time.wait(4000)
         pygame.quit()
         sys.exit()
 
     draw_environment()
     pygame.display.update()
-    clock.tick(3)  # Speed: 3 steps per second
-
+    clock.tick(3)  # Speed
